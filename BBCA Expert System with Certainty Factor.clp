@@ -19,6 +19,7 @@
 (defrule calculate-cf-both-positive
    ?fact1 <- (investor-action (action ?act) (certainty ?c1&:(>= ?c1 0)))
    ?fact2 <- (investor-action (action ?act) (certainty ?c2&:(>= ?c2 0)))
+   (start-compute true)
    (test (neq ?fact1 ?fact2))
    =>
    (retract ?fact1 ?fact2)
@@ -29,6 +30,7 @@
 (defrule calculate-cf-both-negative
    ?fact1 <- (investor-action (action ?act) (certainty ?c1&:(<= ?c1 0)))
    ?fact2 <- (investor-action (action ?act) (certainty ?c2&:(<= ?c2 0)))
+   (start-compute true)
    (test (neq ?fact1 ?fact2))
    =>
    (retract ?fact1 ?fact2)
@@ -39,6 +41,7 @@
 (defrule calculate-cf-opposite-signs
    ?fact1 <- (investor-action (action ?act) (certainty ?c1&:(>= ?c1 0)))
    ?fact2 <- (investor-action (action ?act) (certainty ?c2&:(<= ?c2 0)))
+   (start-compute true)
    =>
    (retract ?fact1 ?fact2)
    (bind ?c3 (/ (+ ?c1 ?c2) (- 1 (min (abs ?c1) (abs ?c2)))))
@@ -72,7 +75,7 @@
 (defrule increase-book-value
 (future-book-value increase)
 =>
-(printout t "In a scale of 0-1, how sure do you think the book value would increase?" crlf crlf)
+(printout t "In a scale of 0-1, how sure do you think the book value would increase?" crlf)
 (bind ?response(read))
 (assert (increase-book-value ?response))
 )
@@ -80,7 +83,7 @@
 (defrule decrease-book-value
 (future-book-value decrease)
 =>
-(printout t "In a scale of 0-1, how sure do you think the book value would decrease?" crlf crlf)
+(printout t "In a scale of 0-1, how sure do you think the book value would decrease?" crlf)
 (bind ?response(read))
 (assert (decrease-book-value ?response))
 )
@@ -104,7 +107,7 @@
 (defrule increase-price-to-book-value
 (future-price-to-book-value increase)
 =>
-(printout t "In a scale of 0-1, how sure do you think the price to book value would increase?" crlf crlf)
+(printout t "In a scale of 0-1, how sure do you think the price to book value would increase?" crlf)
 (bind ?response(read))
 (assert (increase-price-to-book-value ?response))
 )
@@ -112,7 +115,7 @@
 (defrule decrease-book-value
 (future-price-to-book-value decrease)
 =>
-(printout t "In a scale of 0-1, how sure do you think the book value would decrease?" crlf crlf)
+(printout t "In a scale of 0-1, how sure do you think the book value would decrease?" crlf)
 (bind ?response(read))
 (assert (decrease-price-to-book-value ?response))
 )
@@ -136,7 +139,7 @@
 (defrule increase-earning-per-share
 (future-earning-per-share increase)
 =>
-(printout t "In a scale of 0-1, how sure do you think the earning per share would increase?" crlf crlf)
+(printout t "In a scale of 0-1, how sure do you think the earning per share would increase?" crlf)
 (bind ?response(read))
 (assert (increase-earning-per-share ?response))
 )
@@ -144,7 +147,7 @@
 (defrule decrease-earning-per-share
 (future-earning-per-share decrease)
 =>
-(printout t "In a scale of 0-1, how sure do you think the earning per share would decrease?" crlf crlf)
+(printout t "In a scale of 0-1, how sure do you think the earning per share would decrease?" crlf )
 (bind ?response(read))
 (assert (decrease-earning-per-share ?response))
 )
@@ -168,7 +171,7 @@
 (defrule increase-price-to-earning
 (future-price-to-earning increase)
 =>
-(printout t "In a scale of 0-1, how sure do you think the price to earning would increase?" crlf crlf)
+(printout t "In a scale of 0-1, how sure do you think the price to earning would increase?" crlf )
 (bind ?response(read))
 (assert (increase-price-to-earning ?response))
 )
@@ -176,7 +179,7 @@
 (defrule decrease-price-to-earning
 (future-price-to-earning decrease)
 =>
-(printout t "In a scale of 0-1, how sure do you think the price to earning would decrease?" crlf crlf)
+(printout t "In a scale of 0-1, how sure do you think the price to earning would decrease?" crlf)
 (bind ?response(read))
 (assert (decrease-price-to-earning ?response))
 )
@@ -204,7 +207,7 @@
 (decrease-book-value ?c1)
 (decrease-price-to-book-value ?c2)
 =>
-(assert (investor-action (action sell-bbca) (certainty(* (min ?c1 ?c2) 0.7))))
+(assert (investor-action (action sell-bbca) (certainty(* (min ?c1 ?c2) 0.9))))
 )
 
 ; conclude investor action on earning-per-share
@@ -234,11 +237,24 @@
 )
 
 
+; start compute
+
+(defrule start-compute
+(introduction (done-introducting yes))
+(or (increase-book-value ?c1) (decrease-book-value ?c2))
+(or (increase-price-to-book-value ?c3) (decrease-price-to-book-value ?c4))
+(or (increase-earning-per-share ?c5) (decrease-earning-per-share ?c6))
+(or (increase-price-to-earning ?c7) (decrease-price-to-earning ?c8))
+=>
+(assert (start-compute true))
+)
+
 ; display the result
 
 (defrule display-buy-bbca
 ?fact1<-(investor-action (action buy-bbca) (certainty ?c1))
 (not  (investor-action (action buy-bbca) (certainty ?c2&:(neq ?c1 ?c2))))
+(start-compute true)
 =>
 (printout t "Based on the information you provided, you should buy bbca with a certainty of " ?c1 crlf)
 )
@@ -246,6 +262,7 @@
 (defrule display-sell-bbca
 ?fact1<-(investor-action (action sell-bbca) (certainty ?c1))
 (not (investor-action (action sell-bbca) (certainty ?c2&:(neq ?c1 ?c2))))
+(start-compute true)
 =>
 (printout t "Based on the information you provided, you should sell bbca with a certainty of " ?c1 crlf)
 )
