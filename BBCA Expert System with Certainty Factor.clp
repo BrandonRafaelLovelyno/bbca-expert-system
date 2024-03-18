@@ -206,5 +206,43 @@
 
 ; conclude investor action on earning-per-share
 
+(defrule increase-earning-per-share-AND-increase-price-to-earning
+(increase-earning-per-share ?c1)
+(increase-price-to-earning ?c2)
+=>
+(assert buy-bbca (* min(?c1 ?c2) 0.5))
+)
+
+(defrule increase-earning-per-share-OR-increase-price-to-earning
+(or (and (increase-earning-per-share ?c1)
+(decrease-price-to-earning ?c2))
+(and (decrease-earning-per-share ?c1)
+(increase-price-to-earning ?c2))
+)
+=>
+(assert buy-bbca (* max(?c1 ?c2) 0.3))
+)
+
+(defrule decrease-earning-per-share-AND-decrease-price-to-earning
+(decrease-earning-per-share ?c1)
+(decrease-price-to-earning ?c2)
+=>
+(assert sell-bbca (* min(?c1 ?c2) 0.5))
+)
 
 
+; display the result
+
+(defrule display-buy-bbca
+?fact1<-(buy-bbca ?c1)
+(not (?fact2 <- (buy-bbca ?c2&:(neq ?c1 ?c2))))
+=>
+(printout t "Based on the information you provided, you should buy bbca with a certainty of " ?c1 crlf)
+)
+
+(defrule display-sell-bbca
+?fact1<-(sell-bbca ?c1)
+(not (?fact2 <- (sell-bbca ?c2&:(neq ?c1 ?c2))))
+=>
+(printout t "Based on the information you provided, you should sell bbca with a certainty of " ?c1 crlf)
+)
