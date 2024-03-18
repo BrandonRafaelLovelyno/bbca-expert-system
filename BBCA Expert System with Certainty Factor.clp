@@ -178,6 +178,33 @@
 (assert (decrease-price-to-earning ?response))
 )
 
-; conclude investor action
+; conclude investor action on book-value
+
+(defrule increase-book-value-AND-increase-price-to-book-value
+(increase-book-value ?c1)
+(increase-price-to-book-value ?c2)
+=>
+(assert buy-bbca (* min(?c1 ?c2) 0.7))
+)
+
+(defrule increase-book-value-OR-increase-price-to-book-value
+(or (and (increase-book-value ?c1)
+(decrease-price-to-book-value ?c2))
+(and (decrease-book-value ?c1)
+(increase-price-to-book-value ?c2))
+)
+=>
+(assert buy-bbca (* max(?c1 ?c2) 0.4))
+)
+
+(defrule decrease-book-value-AND-decrease-price-to-book-value
+(decrease-book-value ?c1)
+(decrease-price-to-book-value ?c2)
+=>
+(assert sell-bbca (* min(?c1 ?c2) 0.7))
+)
+
+; conclude investor action on earning-per-share
+
 
 
