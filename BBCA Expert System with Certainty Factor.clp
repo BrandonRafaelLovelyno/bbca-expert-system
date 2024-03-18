@@ -9,37 +9,40 @@
 (slot done-introducting)
 )
 
+(deftemplate investor-action
+(slot action)
+(slot certainty (type FLOAT))
+)
+
 ; calculate certainties
 
 (defrule calculate-cf-both-positive
-?fact1<-(?prediction ?c1&:(>= ?c1 0))
-?fact2<-(?prediction ?c2&:(>= ?c2 0))
-(test (neq ?fact1 ?fact2))
-=>
-(retract ?fact1 ?fact2)
-(bind ?c3 (-(+ ?c1 ?c2) (* ?c1 ?c2)))
-(assert (?prediction ?c3))
-)
+   ?fact1 <- (investor-action (action ?act) (certainty ?c1&:(>= ?c1 0)))
+   ?fact2 <- (investor-action (action ?act) (certainty ?c2&:(>= ?c2 0)))
+   (test (neq ?fact1 ?fact2))
+   =>
+   (retract ?fact1 ?fact2)
+   (bind ?c3 (- (+ ?c1 ?c2) (* ?c1 ?c2)))
+   (assert (investor-action (action ?act) (certainty ?c3))))
+
 
 (defrule calculate-cf-both-negative
-?fact1<-(?prediction ?c1&:(<= ?c1 0))
-?fact2<-(?prediction ?c2&:(<= ?c2 0))
-=>
-(retract ?fact1 ?fact2)
-(bind ?c3 (+(+ ?c1 ?c2) (* ?c1 ?c2)))
-(assert (?prediction ?c3))
-)
+   ?fact1 <- (investor-action (action ?act) (certainty ?c1&:(<= ?c1 0)))
+   ?fact2 <- (investor-action (action ?act) (certainty ?c2&:(<= ?c2 0)))
+   (test (neq ?fact1 ?fact2))
+   =>
+   (retract ?fact1 ?fact2)
+   (bind ?c3 (+ (+ ?c1 ?c2) (* ?c1 ?c2)))
+   (assert (investor-action (action ?act) (certainty ?c3))))
+
 
 (defrule calculate-cf-opposite-signs
-?fact1<-(?prediction ?c1&:(>= ?c1 0))
-(test (<= ?c1 1))
-?fact2<-(?prediction ?c2&:(<= ?c2 0))
-(test (>= ?c2 -1))
-=>
-(retract ?fact1 ?fact2)
-(bind ?c3 (/(+ ?c1 ?c2) (-1 (min(abs ?c1) (abs ?c2)))))
-(assert (?prediction ?c3))
-)
+   ?fact1 <- (investor-action (action ?act) (certainty ?c1&:(>= ?c1 0)))
+   ?fact2 <- (investor-action (action ?act) (certainty ?c2&:(<= ?c2 0)))
+   =>
+   (retract ?fact1 ?fact2)
+   (bind ?c3 (/ (+ ?c1 ?c2) (- 1 (min (abs ?c1) (abs ?c2)))))
+   (assert (investor-action (action ?act) (certainty ?c3))))
 
 
 ; introduction
@@ -56,18 +59,18 @@
 (defrule ask-for-current-book-value
 (introduction (done-introducting yes))
 =>
-((printout t "In future circumstances, would you think the book value for bbca would decrease, normal, or increase?" crlf)
-(printout t "PS: The 3-years mean of bbca book value is 1801.09" crlf))
+(printout t "In future circumstances, would you think the book value for bbca would decrease, normal, or increase?" crlf)
+(printout t "PS: The 3-years mean of bbca book value is 1801.09" crlf)
 (bind ?response(read))
-(if (member$ ?response (create$ "decrease" "normal" "increase"))
+(if (member$ ?response (create$ decrease normal increase))
        then
        (assert (future-book-value ?response))
        else
-       (printout t "Invalid value. Please enter a valid value." crlf))
-)
+       (printout t "Invalid value. Please enter a valid value." crlf)))
+
 
 (defrule increase-book-value
-(future-book-value "increase")
+(future-book-value increase)
 =>
 (printout t "In a scale of 0-1, how sure do you think the book value would increase?" crlf crlf)
 (bind ?response(read))
@@ -75,7 +78,7 @@
 )
 
 (defrule decrease-book-value
-(future-book-value "decrease")
+(future-book-value decrease)
 =>
 (printout t "In a scale of 0-1, how sure do you think the book value would decrease?" crlf crlf)
 (bind ?response(read))
@@ -88,10 +91,10 @@
 (introduction (done-introducting yes))
 (future-book-value ?response)
 =>
-((printout t "In future circumstances, would you think the price to book value for bbca would decrease, normal, or increase?" crlf)
-(printout t "PS: The 3-years mean of bbca price to book value is 4.78" crlf))
+(printout t "In future circumstances, would you think the price to book value for bbca would decrease, normal, or increase?" crlf)
+(printout t "PS: The 3-years mean of bbca price to book value is 4.78" crlf)
 (bind ?response(read))
-(if (member$ ?response (create$ "decrease" "normal" "increase"))
+(if (member$ ?response (create$ decrease normal increase))
        then
        (assert (future-price-to-book-value ?response))
        else
@@ -99,7 +102,7 @@
 )
 
 (defrule increase-price-to-book-value
-(future-price-to-book-value "increase")
+(future-price-to-book-value increase)
 =>
 (printout t "In a scale of 0-1, how sure do you think the price to book value would increase?" crlf crlf)
 (bind ?response(read))
@@ -107,7 +110,7 @@
 )
 
 (defrule decrease-book-value
-(future-price-to-book-value "decrease")
+(future-price-to-book-value decrease)
 =>
 (printout t "In a scale of 0-1, how sure do you think the book value would decrease?" crlf crlf)
 (bind ?response(read))
@@ -120,10 +123,10 @@
 (introduction (done-introducting yes))
 (future-price-to-book-value ?response)
 =>
-((printout t "In future circumstances, would you think the earning per share for bbca would decrease, normal, or increase?" crlf)
-(printout t "PS: The 3-years mean of bbca earning per share is 326.34" crlf))
+(printout t "In future circumstances, would you think the earning per share for bbca would decrease, normal, or increase?" crlf)
+(printout t "PS: The 3-years mean of bbca earning per share is 326.34" crlf)
 (bind ?response(read))
-(if (member$ ?response (create$ "decrease" "normal" "increase"))
+(if (member$ ?response (create$ decrease normal increase))
        then
        (assert (future-earning-per-share ?response))
        else
@@ -131,7 +134,7 @@
 )
 
 (defrule increase-earning-per-share
-(future-earning-per-share "increase")
+(future-earning-per-share increase)
 =>
 (printout t "In a scale of 0-1, how sure do you think the earning per share would increase?" crlf crlf)
 (bind ?response(read))
@@ -139,7 +142,7 @@
 )
 
 (defrule decrease-earning-per-share
-(future-earning-per-share "decrease")
+(future-earning-per-share decrease)
 =>
 (printout t "In a scale of 0-1, how sure do you think the earning per share would decrease?" crlf crlf)
 (bind ?response(read))
@@ -152,10 +155,10 @@
 (introduction (done-introducting yes))
 (future-earning-per-share ?response)
 =>
-((printout t "In future circumstances, would you think the price to earning for bbca would decrease, normal, or increase?" crlf)
-(printout t "PS: The 3-years mean of bbca price to earning is 27.45" crlf))
+(printout t "In future circumstances, would you think the price to earning for bbca would decrease, normal, or increase?" crlf)
+(printout t "PS: The 3-years mean of bbca price to earning is 27.45" crlf)
 (bind ?response(read))
-(if (member$ ?response (create$ "decrease" "normal" "increase"))
+(if (member$ ?response (create$ decrease normal increase))
        then
        (assert (future-price-to-earning ?response))
        else
@@ -163,7 +166,7 @@
 )
 
 (defrule increase-price-to-earning
-(future-price-to-earning "increase")
+(future-price-to-earning increase)
 =>
 (printout t "In a scale of 0-1, how sure do you think the price to earning would increase?" crlf crlf)
 (bind ?response(read))
@@ -171,7 +174,7 @@
 )
 
 (defrule decrease-price-to-earning
-(future-price-to-earning "decrease")
+(future-price-to-earning decrease)
 =>
 (printout t "In a scale of 0-1, how sure do you think the price to earning would decrease?" crlf crlf)
 (bind ?response(read))
@@ -184,7 +187,7 @@
 (increase-book-value ?c1)
 (increase-price-to-book-value ?c2)
 =>
-(assert buy-bbca (* min(?c1 ?c2) 0.7))
+   (assert (investor-action (action buy-bbca) (certainty (* (min ?c1 ?c2) 0.7))))
 )
 
 (defrule increase-book-value-OR-increase-price-to-book-value
@@ -194,14 +197,14 @@
 (increase-price-to-book-value ?c2))
 )
 =>
-(assert buy-bbca (* max(?c1 ?c2) 0.4))
+(assert (investor-action (action buy-bbca) (certainty(* (max ?c1 ?c2) 0.4))))
 )
 
 (defrule decrease-book-value-AND-decrease-price-to-book-value
 (decrease-book-value ?c1)
 (decrease-price-to-book-value ?c2)
 =>
-(assert sell-bbca (* min(?c1 ?c2) 0.7))
+(assert (investor-action (action sell-bbca) (certainty(* (min ?c1 ?c2) 0.7))))
 )
 
 ; conclude investor action on earning-per-share
@@ -210,7 +213,7 @@
 (increase-earning-per-share ?c1)
 (increase-price-to-earning ?c2)
 =>
-(assert buy-bbca (* min(?c1 ?c2) 0.5))
+(assert (investor-action (action buy-bbca) (certainty(* (min ?c1 ?c2) 0.5))))
 )
 
 (defrule increase-earning-per-share-OR-increase-price-to-earning
@@ -220,29 +223,29 @@
 (increase-price-to-earning ?c2))
 )
 =>
-(assert buy-bbca (* max(?c1 ?c2) 0.3))
+(assert (investor-action (action buy-bbca)  (certainty(* (max ?c1 ?c2) 0.3))))
 )
 
 (defrule decrease-earning-per-share-AND-decrease-price-to-earning
 (decrease-earning-per-share ?c1)
 (decrease-price-to-earning ?c2)
 =>
-(assert sell-bbca (* min(?c1 ?c2) 0.5))
+(assert (investor-action (action sell-bbca) (certainty(* (min ?c1 ?c2) 0.5))))
 )
 
 
 ; display the result
 
 (defrule display-buy-bbca
-?fact1<-(buy-bbca ?c1)
-(not (?fact2 <- (buy-bbca ?c2&:(neq ?c1 ?c2))))
+?fact1<-(investor-action (action buy-bbca) (certainty ?c1))
+(not  (investor-action (action buy-bbca) (certainty ?c2&:(neq ?c1 ?c2))))
 =>
 (printout t "Based on the information you provided, you should buy bbca with a certainty of " ?c1 crlf)
 )
 
 (defrule display-sell-bbca
-?fact1<-(sell-bbca ?c1)
-(not (?fact2 <- (sell-bbca ?c2&:(neq ?c1 ?c2))))
+?fact1<-(investor-action (action sell-bbca) (certainty ?c1))
+(not (investor-action (action sell-bbca) (certainty ?c2&:(neq ?c1 ?c2))))
 =>
 (printout t "Based on the information you provided, you should sell bbca with a certainty of " ?c1 crlf)
 )
