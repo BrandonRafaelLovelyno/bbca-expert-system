@@ -62,10 +62,10 @@
 (defrule ask-for-current-book-value
 (introduction (done-introducting yes))
 =>
-(printout t "In future circumstances, would you think the book value for bbca would decrease, normal, or increase?" crlf)
+(printout t "In future circumstances, would you think the book value for bbca would decrease or increase?" crlf)
 (printout t "PS: The 3-years mean of bbca book value is 1801.09" crlf)
 (bind ?response(read))
-(if (member$ ?response (create$ decrease normal increase))
+(if (member$ ?response (create$ decrease  increase))
        then
        (assert (future-book-value ?response))
        else
@@ -94,10 +94,10 @@
 (introduction (done-introducting yes))
 (future-book-value ?response)
 =>
-(printout t "In future circumstances, would you think the price to book value for bbca would decrease, normal, or increase?" crlf)
+(printout t "In future circumstances, would you think the price to book value for bbca would decrease or increase?" crlf)
 (printout t "PS: The 3-years mean of bbca price to book value is 4.78" crlf)
 (bind ?response(read))
-(if (member$ ?response (create$ decrease normal increase))
+(if (member$ ?response (create$ decrease increase))
        then
        (assert (future-price-to-book-value ?response))
        else
@@ -126,10 +126,10 @@
 (introduction (done-introducting yes))
 (future-price-to-book-value ?response)
 =>
-(printout t "In future circumstances, would you think the earning per share for bbca would decrease, normal, or increase?" crlf)
+(printout t "In future circumstances, would you think the earning per share for bbca would decrease or increase?" crlf)
 (printout t "PS: The 3-years mean of bbca earning per share is 326.34" crlf)
 (bind ?response(read))
-(if (member$ ?response (create$ decrease normal increase))
+(if (member$ ?response (create$ decrease increase))
        then
        (assert (future-earning-per-share ?response))
        else
@@ -158,10 +158,10 @@
 (introduction (done-introducting yes))
 (future-earning-per-share ?response)
 =>
-(printout t "In future circumstances, would you think the price to earning for bbca would decrease, normal, or increase?" crlf)
+(printout t "In future circumstances, would you think the price to earning for bbca would decrease or increase?" crlf)
 (printout t "PS: The 3-years mean of bbca price to earning is 27.45" crlf)
 (bind ?response(read))
-(if (member$ ?response (create$ decrease normal increase))
+(if (member$ ?response (create$ decrease  increase))
        then
        (assert (future-price-to-earning ?response))
        else
